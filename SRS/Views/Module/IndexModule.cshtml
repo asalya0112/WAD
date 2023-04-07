@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div ng-app="SPA_SRS">
+    <div ng-view></div>
+</div>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+<script type="text/javascript">
+    // Creating a Module to use within index page
+
+    angular
+        .module('SPA_SRS', ['ngRoute'])
+        .config(function ($routeProvider) {
+            $routeProvider
+                .when('/',
+                    {
+                        templateUrl: '/pagesModule/moduleIndex.html',
+                        controller: 'IndexModuleController'
+                    })
+                .when('/create',
+                    {
+                        templateUrl: '/pagesModule/moduleCreate.html',
+                        controller: 'CreateModuleController'
+                    })
+                .when('/details/:moduleId',
+                    {
+                        templateUrl: '/pagesModule/moduleDetails.html',
+                        controller: 'DetailsModuleController'
+                    })
+
+                .when('/edit/:moduleId',
+                    {
+                        templateUrl: '/pagesModule/moduleEdit.html',
+                        controller: 'EditDeleteModuleController'
+                    })
+                .otherwise({
+                    redirectTo: '/'
+                });
+
+        })
+        .controller('IndexModuleController', ['$scope', '$http', function ($scope, $http) {
+            $scope.modules = [];
+            $http.get('https://localhost:44356/api/Module/')
+                .then(function (res) {
+
+                    $scope.modules = res.data;
+                })
+        }])
+        .controller('CreateModuleController', ['$scope', '$http', '$location', function ($scope, $http, $location) {
+            $scope.modules = [];
+            $http.get('https://localhost:44356/api/Module/')
+                .then(function (res){
+                $scope.modules = res.data;
+            });
+    $scope.module =
+    {
+        Id: 0,
+        name: '',
+        description:''
+    };
+    $scope.AddModule = function () {
+        $http.post('https://localhost:44356/api/Module/', $scope.module)
+            .then(function (res) {
+                $location.path('/')
+            });
+    }
+
+            }])
+                .controller('DetailsModuleController', ['$scope', '$http', '$routeParams', function ($scope, $http, $routeParams) {
+        $scope.details = [];
+
+        $http.get('https://localhost:44356/api/Module/' + $routeParams.moduleId)
+            .then(function (res) {
+                $scope.details = res.data;
+            });
+
+    }])
+        .controller('EditDeleteModuleController', ['$scope', '$http', '$location', '$routeParams', function ($scope, $http, $location, $routeParams) {
+            $scope.module = [];
+           
+            $http.get('https://localhost:44356/api/Module/')
+                .then(function (res){
+                $scope.module = res.data;
+            });
+
+    
+
+    $scope.Edit = function () {
+        $http.put('https://localhost:44356/api/Module/' + $routeParams.moduleId, $scope.edit)
+            .then(function (res) {
+                $location.path('/');
+            });
+    };
+    $scope.Delete = function () {
+        $http.delete('https://localhost:44356/api/Module/' + $routeParams.moduleId, $scope.edit)
+            .then(function (res) {
+                $location.path('/');
+            });
+    };
+
+            }]);
+</script>

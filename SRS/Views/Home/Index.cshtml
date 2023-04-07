@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div ng-app="SPA_SRS">
+    <div ng-view></div>
+</div>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+<script type="text/javascript">
+    // Creating a Module to use within index page
+    
+    angular
+        .module('SPA_SRS', ['ngRoute'])
+        .config(function ($routeProvider) {
+            $routeProvider
+                .when('/',
+                    {
+                        templateUrl: 'pages/index.html',
+                        controller: 'IndexController'
+                    })
+                .when('/create',
+                    {
+                        templateUrl: 'pages/create.html',
+                        controller: 'CreateController'
+                    })
+                .when('/details/:studentId',
+                    {
+                        templateUrl: 'pages/details.html',
+                        controller: 'DetailsController'
+                    })
+
+                .when('/edit/:studentId',
+                    {
+                        templateUrl: 'pages/edit.html',
+                        controller: 'EditDeleteController'
+                    })
+                .otherwise({
+                    redirectTo: '/'
+                });
+
+        })
+        .controller('IndexController', ['$scope', '$http', function ($scope, $http)
+        {
+            $scope.students = [];
+            $http.get('https://localhost:44356/api/Student/')
+                .then(function (res) {
+
+                    $scope.students = res.data;
+                })
+        }])
+        .controller('CreateController', ['$scope', '$http','$location', function ($scope, $http, $location)
+        {
+            $scope.module = [];
+            $http.get('https://localhost:44356/api/Student/')
+                .then(function (res){
+                $scope.module = res.data;
+            });
+            $scope.student =
+                {
+                    Id : 0,
+                    firstName : '',
+                    lastName: '',
+                    course: '',
+                    age: '',
+                    doB: '2002-06-18T10:34:09',
+                    studentModule: ''
+                };
+            $scope.AddStudent = function()
+            {
+                $http.post('https://localhost:44356/api/Student/', $scope.student)
+                    .then(function (res)
+                    {
+                        $location.path('/')
+                    });
+            }
+
+        }])
+
+
+        .controller('DetailsController', ['$scope', '$http', '$routeParams', function ($scope, $http, $routeParams)
+        {
+            $scope.details = [];
+
+            $http.get('https://localhost:44356/api/Student/' + $routeParams.studentId)
+                .then(function (res)
+                {
+                    $scope.details = res.data;
+                });
+
+        }])
+        .controller('EditDeleteController', ['$scope', '$http','$location', '$routeParams', function ($scope, $http, $location, $routeParams)
+        {
+            $scope.student = [];
+            $scope.modules = [];
+            $http.get('https://localhost:44356/api/Module/')
+            .then(function (res){
+                $scope.modules = res.data;
+            });
+
+            $http.get('https://localhost:44356/api/Student/' + $routeParams.studentId)
+                .then(function (res)
+                {
+                    $scope.student = res.data;
+                });
+
+            $scope.Edit = function () {
+                $http.put('https://localhost:44356/api/Student/' + $routeParams.studentId, $scope.edit)
+                    .then(function (res) {
+                        $location.path('/');
+                    });
+            };
+            $scope.Delete = function () {
+                $http.delete('https://localhost:44356/api/Student/' + $routeParams.studentId, $scope.edit)
+                    .then(function (res) {
+                        $location.path('/');
+                    });
+            };
+
+        }]);
+</script>
